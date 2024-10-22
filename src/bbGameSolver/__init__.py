@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class Game:
+class DGame:
     log: np.ndarray
     mtx: np.ndarray
     def __init__(self, game_mtx):
@@ -43,5 +43,4 @@ class Game:
     def from_func(cls, func, N, M):
         mtx = np.fromiter((func(i, j) for i in range(N) for j in range(M)), float).reshape((N, M))
         return cls(mtx)
-    
     
