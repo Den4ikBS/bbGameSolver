@@ -37,8 +37,11 @@ class Game:
     
     @classmethod
     def from_csv(cls, csv_path):
-        pass
+        return cls(pd.read_csv(csv_path).to_numpy())
 
     @classmethod
-    def from_func(cls, func):
-        pass
+    def from_func(cls, func, N, M):
+        mtx = np.fromiter((func(i, j) for i in range(N) for j in range(M)), float).reshape((N, M))
+        return cls(mtx)
+    
+    
