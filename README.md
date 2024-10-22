@@ -1,1 +1,1 @@
-# BB_Game_Solver
+# bbGameSolver
