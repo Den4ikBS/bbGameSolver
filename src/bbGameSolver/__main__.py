@@ -17,4 +17,4 @@ n = 6
 g = DGame.from_func(duel(n), n, n)
 print(g.mtx * n ** 2)
 log = g.solve(10000)
-print(log[0], log[1])
+print(log[0].round(2), log[1].round(2))
