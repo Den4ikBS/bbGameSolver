@@ -1,3 +1,4 @@
+import sys
 from . import *
 
 from pprint import pprint
@@ -19,11 +20,13 @@ def duel(n):
             return (i + 1) / n - (1 - (i + 1) / n) * (j + 1) / n
         else:
             return (1 - (j + 1) / n) * (i + 1) / n - (j + 1) / n
-    return f
+    res = np.fromiter((f(i, j) for i in range(n) for j in range(n)), float).reshape((n, n)) * n ** 2
+    return res.round()
 
-n = 6
-g = DGame.from_func(duel(n), n, n)
-print(g.mtx * n ** 2)
-log = g.solve(10000)
-print(log[0].round(2), log[1].round(2))
+n = int(sys.argv[1])
+g = DGame(duel(n))
+# print(g.mtx * n ** 2)
+# log = g.solve(10000)
+# print(log[0].round(2), log[1].round(2))
+g.to_tsv(f"../data/duel{n}.tsv")
 

@@ -28,7 +28,7 @@ class DGame:
             self.log[i, 2+B_moves:] = new_score_b
         strat_a = np.zeros(A_moves)
         strat_b = np.zeros(B_moves)
-        print(A_moves, B_moves)
+        # print(A_moves, B_moves)
         for i in range(A_moves):
             strat_a[i] = (self.log[:, 0].astype(int) == i).sum() / n
         for i in range(B_moves):
@@ -36,8 +36,11 @@ class DGame:
         return strat_a, strat_b
     
     @classmethod
-    def from_csv(cls, csv_path):
-        return cls(pd.read_csv(csv_path).to_numpy())
+    def from_tsv(cls, csv_path):
+        return cls(pd.read_csv(csv_path, header=None, sep='\t').to_numpy())
+    
+    def to_tsv(self, csv_path):
+        return pd.DataFrame(self.mtx).to_csv(csv_path, index=False, header=False, sep='\t')
 
     @classmethod
     def from_func(cls, func, N, M):
