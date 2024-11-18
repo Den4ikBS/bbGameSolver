@@ -441,7 +441,10 @@ class MatrixTable(CTkFrame):
         start = time.time()
         for i in range(self.rows):
             for j in range(self.cols):
-                entry = create_entry(self.scrollable_frame)
+                entry = create_entry(self.scrollable_frame,
+                                     width=54,
+                                     height=30,
+                                     )
                 # entry = tk.Entry(self.scrollable_frame)
                 lbl_r = create_label(self.scrollable_frame, text=f"{i}")
                 lbl_c = create_label(self.scrollable_frame, text=f"{j}")

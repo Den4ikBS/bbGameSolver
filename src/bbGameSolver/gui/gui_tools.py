@@ -14,7 +14,7 @@ def create_entry(master, width=24, height=24, fg_color="transparent"):
                          height=height,
                          corner_radius=20,
                          fg_color=fg_color,
-                         font=(my_font[0], 14),
+                         font=(my_font[0], 13),
                          )
         entry.insert(0, 0)  
         return entry
