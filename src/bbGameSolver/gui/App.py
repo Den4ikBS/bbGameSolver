@@ -16,7 +16,6 @@ set_appearance_mode("dark")  # Modes: "System" (standard), "Dark", "Light"
 set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
 '''
-fix saving as tsv
 esc doesn't work
 add localization
 load font from file
@@ -39,7 +38,7 @@ class StartPage(CTkFrame):
                                 )
 
         self.btn_start = create_button(self.main_frame,
-                                    text='start',
+                                    text='начать',
                                     cmd=lambda: self.controller.show_frame("MatrixPage"),
                                     )
         
@@ -60,7 +59,7 @@ class StartPage(CTkFrame):
         self.main_frame.grid_rowconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(1, weight=1)
         self.main_frame.grid(row=0, column=0, sticky="ns")
-     
+
 
 class MatrixPage(CTkFrame):
     def __init__(self, parent, controller):
@@ -99,29 +98,29 @@ class MatrixPage(CTkFrame):
                            text='x',
                            )
         self.btn_save = create_button(self.menu,
-                                      text='save',
+                                      text='сохранить',
                                       cmd=self.button_save_callback,
                                       )
         
         self.btn_upload = create_button(self.menu,
-                                        text='upload',
+                                        text='загрузить',
                                         cmd=self.button_upload_callback,
                                         )
         
         self.btn_reset = create_button(self.menu,
-                                       text='reset',
+                                       text='сбросить',
                                        cmd=self.controller.reset,
                                        )
         
         self.btn_solve = create_button(self.menu,
-                                       text='solve',
+                                       text='решить',
                                        cmd=self.solve,
                                        )
         
-        tooltips = {self.btn_save: "save matrix to file", 
-                    self.btn_upload: "upload matrix from file",
-                    self.btn_reset: "reset matrix", 
-                    self.btn_solve: "solve matrix game",
+        tooltips = {self.btn_save: "сохранить матрицу в файл", 
+                    self.btn_upload: "загрузить матрицу из файла",
+                    self.btn_reset: "сбросить матрицу", 
+                    self.btn_solve: "решить матричную игру",
                     }
         
         for k, v in tooltips.items():
@@ -198,6 +197,8 @@ class MatrixPage(CTkFrame):
         self.s1, self.s2 = g.solve(n=1000)
         self.s1 = self.s1.round(2)
         self.s2 = self.s2.round(2)
+        print(self.s1)
+        print(self.s2)
         # print(self.s1, self.s2)
         self.controller.frames["ResultPage"].res_frame.update_res(self.s1, self.s2)
         self.controller.show_frame("ResultPage")
@@ -220,11 +221,11 @@ class ResultPage(CTkFrame):
         self.navbar = self.add_navbar() 
 
         self.btn_reset = create_button(self.menu,
-                                       text='reset',
+                                       text='сбросить',
                                        cmd=self.controller.reset,
                                        )
         
-        tooltips = {self.btn_reset: "reset matrix"}
+        tooltips = {self.btn_reset: "сбросить матрицу"}
         
         for k, v in tooltips.items():
             self.create_tooltip(k, v)
@@ -250,7 +251,7 @@ class ResultPage(CTkFrame):
                     cmd_next=self.controller.reset,
                     text_next="", #↺
                     img=img,
-                    tooltips=(None, "reset matrix")
+                    tooltips=(None, "сбросить матрицу")
                     )
         return self.navbar
     
@@ -392,11 +393,11 @@ class ResFrame(CTkScrollableFrame):
                                      )
         
         self.lbl1 = create_label(self,
-                                 text='Result vector 1:',
+                                 text='Результат 1:',
                                  )
         
         self.lbl2 = create_label(self,
-                                 text='Result vector 2:',
+                                 text='Результат 2:',
                                  )
         
         self.lbl1.grid(row=0, column=0, padx=10, pady=10, sticky="w")
