@@ -2,13 +2,13 @@ import PIL.Image
 import numpy as np
 import time
 import PIL
-import configparser
 import pywinstyles
 from customtkinter import *
 from tktooltip import ToolTip
 
 from ..config import *
 from .gui_tools import *
+from ..utils import *
 from ..calc import DGame
 
 
@@ -17,8 +17,6 @@ set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-bl
 
 '''
 esc doesn't work
-add localization
-load font from file
 '''
 
 class StartPage(CTkFrame):
@@ -34,31 +32,33 @@ class StartPage(CTkFrame):
 
     def create_widgets(self):
         self.lbl_hello = create_label(self.main_frame,
-                                text='Это\nрешатель\nматричных\nигр',
-                                )
+                                      textvar=self.controller.text_vars['welcome_message']
+                                      )
 
         self.btn_start = create_button(self.main_frame,
-                                    text='начать',
-                                    cmd=lambda: self.controller.show_frame("MatrixPage"),
-                                    )
+                                       textvar=self.controller.text_vars['start'],
+                                       cmd=lambda: self.controller.show_frame("MatrixPage"),
+                                       )
         
-    def place_widgets(self):
-        self.lbl_hello.grid(row=0, column=0, padx=80, pady=5, sticky="s")
-        self.btn_start.grid(row=1, column=0, padx=10, pady=5, sticky="n")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)  
+        self.translate_img = CTkImage(PIL.Image.open("../assets/images/translate.png"), size=(22, 22))
+        self.btn_lang = create_button(self.main_frame,
+                                      width=36,
+                                      height=36,
+                                      image=self.translate_img,
+                                      cmd=self.controller.switch_language,
+                                      )
+        
+    def place_widgets(self): 
+        self.lbl_hello.pack(side=TOP, anchor=CENTER, padx=10, pady=(HEIGHT//2-100,5))
+        self.btn_start.pack(side=TOP, anchor=CENTER, padx=10, pady=5)
+        self.btn_lang.pack(side=TOP, anchor=CENTER, padx=10, pady=5)
 
     def create_background(self):
-        self.bg_image = CTkImage(PIL.Image.open("../assets/images/matrix.jpg"), size=(WIDTH, HEIGHT))
+        self.bg_image = CTkImage(PIL.Image.open("../assets/images/neon-green-matrix.jpg"), size=(WIDTH, HEIGHT))
         self.bg_image_label = create_label(self, image=self.bg_image, text="")
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
-
-        self.main_frame = CTkFrame(self, corner_radius=0, width=240)
-        self.main_frame.pack(expand=1, fill=Y)
-        self.main_frame.grid_columnconfigure(0, weight=1)
-        self.main_frame.grid_rowconfigure(0, weight=1)
-        self.main_frame.grid_rowconfigure(1, weight=1)
-        self.main_frame.grid(row=0, column=0, sticky="ns")
+        self.main_frame = CTkFrame(self, corner_radius=0, width=240, height=HEIGHT)
+        self.main_frame.pack(expand=1, fill=Y, ipady=100)
 
 
 class MatrixPage(CTkFrame):
@@ -72,9 +72,6 @@ class MatrixPage(CTkFrame):
         
         self.entry_x.bind("<KeyRelease>", self.update_matrix_frame)
         self.entry_y.bind("<KeyRelease>", self.update_matrix_frame)
-        
-        for widget in [self.btn_upload, self.btn_save, self.btn_reset]:
-            self.menu.add_widget(widget)
 
         self.place_widgets()
     
@@ -91,40 +88,50 @@ class MatrixPage(CTkFrame):
         self.matrix_frame = self.add_matrix(int(self.entry_x.get()), int(self.entry_y.get()))
 
         self.lbl_shape = create_label(self.lbl_frame, 
-                                      text='Размер матрицы:'
+                                      textvar=self.controller.text_vars['matrix_shape']
                                       )
         
         self.lbl = create_label(self.lbl_frame,
-                           text='x',
-                           )
+                                text='x',
+                                )
+        
+        
         self.btn_save = create_button(self.menu,
-                                      text='сохранить',
+                                      textvar=self.controller.text_vars['save'],
                                       cmd=self.button_save_callback,
                                       )
         
         self.btn_upload = create_button(self.menu,
-                                        text='загрузить',
+                                        textvar=self.controller.text_vars['upload'],
                                         cmd=self.button_upload_callback,
                                         )
         
         self.btn_reset = create_button(self.menu,
-                                       text='сбросить',
+                                       textvar=self.controller.text_vars['reset'],
                                        cmd=self.controller.reset,
                                        )
         
         self.btn_solve = create_button(self.menu,
-                                       text='решить',
+                                       textvar=self.controller.text_vars['solve'],
                                        cmd=self.solve,
                                        )
         
-        tooltips = {self.btn_save: "сохранить матрицу в файл", 
-                    self.btn_upload: "загрузить матрицу из файла",
-                    self.btn_reset: "сбросить матрицу", 
-                    self.btn_solve: "решить матричную игру",
+        self.translate_img = CTkImage(PIL.Image.open("../assets/images/translate.png"), size=(22, 22))
+        self.btn_lang = create_button(self.menu,
+                                      image=self.translate_img,
+                                      width=36, 
+                                      height=36,
+                                      cmd=self.controller.switch_language,
+                                      )
+
+        tooltips = {self.btn_save: lambda: self.controller.text_vars['tooltip_save'].get(), #"сохранить матрицу в файл", 
+                    self.btn_upload: lambda: self.controller.text_vars['tooltip_upload'].get(), #"загрузить матрицу из файла",
+                    self.btn_reset: lambda: self.controller.text_vars['tooltip_reset'].get(), #"сбросить матрицу", 
+                    self.btn_solve: lambda: self.controller.text_vars['tooltip_solve'].get(), #"решить матричную игру",
                     }
         
-        for k, v in tooltips.items():
-            self.create_tooltip(k, v)
+        for widget, msg_func in tooltips.items():
+            self.create_tooltip(widget, msg_func)
         
     def create_tooltip(self, widget, msg=""):
         ToolTip(widget, msg=msg, delay=0.01, follow=True,
@@ -132,7 +139,7 @@ class MatrixPage(CTkFrame):
         fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
     def place_widgets(self):
-        for widget in [self.btn_save, self.btn_upload, self.btn_reset, self.btn_solve]:
+        for widget in [self.btn_lang, self.btn_save, self.btn_upload, self.btn_reset, self.btn_solve]:
             self.menu.add_widget(widget)
 
         self.navbar.pack(side=BOTTOM, padx=10, pady=10, fill=X)
@@ -147,7 +154,6 @@ class MatrixPage(CTkFrame):
         self.matrix_frame.pack(side=TOP, anchor=NW, padx=10, pady=10, fill=BOTH, expand=1)      
 
     def add_matrix(self, rows, cols):
-        # self.matrix_frame = MatrixTable(self, rows, cols)
         self.matrix_frame = MatrixTable(self, rows, cols)
         return self.matrix_frame
     
@@ -184,9 +190,9 @@ class MatrixPage(CTkFrame):
         mat = self.matrix_frame.get_matrix_data() 
         print(mat)
         file_path = filedialog.asksaveasfile(initialdir='../data',
-                                  initialfile = 'Untitled.tsv',
-                                  defaultextension=".tsv",
-                                  )  
+                                             initialfile = 'Untitled.tsv',
+                                             defaultextension=".tsv",
+                                             )  
                 
         to_tsv(mat, file_path)
 
@@ -197,9 +203,6 @@ class MatrixPage(CTkFrame):
         self.s1, self.s2 = g.solve(n=1000)
         self.s1 = self.s1.round(2)
         self.s2 = self.s2.round(2)
-        print(self.s1)
-        print(self.s2)
-        # print(self.s1, self.s2)
         self.controller.frames["ResultPage"].res_frame.update_res(self.s1, self.s2)
         self.controller.show_frame("ResultPage")
 
@@ -221,11 +224,19 @@ class ResultPage(CTkFrame):
         self.navbar = self.add_navbar() 
 
         self.btn_reset = create_button(self.menu,
-                                       text='сбросить',
+                                       textvar=self.controller.text_vars['reset'],
                                        cmd=self.controller.reset,
                                        )
         
-        tooltips = {self.btn_reset: "сбросить матрицу"}
+        self.translate_img = CTkImage(PIL.Image.open("../assets/images/translate.png"), size=(22, 22))
+        self.btn_lang = create_button(self.menu,
+                                      image=self.translate_img,
+                                      width=36, 
+                                      height=36,
+                                      cmd=self.controller.switch_language,
+                                      )
+        
+        tooltips = {self.btn_reset: lambda: self.controller.text_vars['reset'].get()}
         
         for k, v in tooltips.items():
             self.create_tooltip(k, v)
@@ -236,7 +247,7 @@ class ResultPage(CTkFrame):
         fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
     def place_widgets(self):
-        for widget in [self.btn_reset]:
+        for widget in [self.btn_lang, self.btn_reset]:
             self.menu.add_widget(widget)
 
         self.navbar.pack(side=BOTTOM, padx=10, pady=10, fill=X)
@@ -247,12 +258,12 @@ class ResultPage(CTkFrame):
     def add_navbar(self):
         img = CTkImage(PIL.Image.open("../assets/images/refresh.png"), size=(14, 14))
         self.navbar = NavBar(self, 
-                    cmd_prev=lambda: self.controller.show_frame("MatrixPage"), 
-                    cmd_next=self.controller.reset,
-                    text_next="", #↺
-                    img=img,
-                    tooltips=(None, "сбросить матрицу")
-                    )
+                             cmd_prev=lambda: self.controller.show_frame("MatrixPage"), 
+                             cmd_next=self.controller.reset,
+                             text_next="", #↺
+                             img=img,
+                             tooltips=(None, lambda: self.controller.text_vars['reset'].get())
+                             )
         return self.navbar
     
     def add_menu(self):
@@ -260,7 +271,7 @@ class ResultPage(CTkFrame):
         return self.menu
     
     def add_res(self):
-        self.res_frame = ResFrame(self, None, None) #self.controller.frames["MatrixPage"].s1, self.controller.frames["MatrixPage"].s2
+        self.res_frame = ResFrame(self, None, None, self.controller)
         return self.res_frame
 
 
@@ -275,6 +286,24 @@ class App(CTk):
         self.popup_window = None
         self.bind("<F1>", self.open_popup)
         self.bind("<Escape>", self.close_popup)
+        self.translations = load_translations()
+        self.current_language = 'ru'
+        self.text_vars = {
+            'welcome_message': StringVar(),
+            'start': StringVar(),
+            'save': StringVar(),
+            'upload': StringVar(),
+            'reset': StringVar(),
+            'solve': StringVar(),
+            'matrix_shape': StringVar(),
+            'result_1': StringVar(),
+            'result_2': StringVar(),
+            'tooltip_save': StringVar(),
+            'tooltip_upload': StringVar(),
+            'tooltip_reset': StringVar(),
+            'tooltip_solve': StringVar(),
+            }
+        self.set_language(self.current_language)
         self.create_pages()
         self.show_frame("StartPage")
     
@@ -318,6 +347,15 @@ class App(CTk):
         if self.popup_window is not None and self.popup_window.winfo_exists():
             self.popup_window.destroy()
             self.popup_window = None
+
+    def set_language(self, language):
+        for key, var in self.text_vars.items():
+            translated_text = self.translations[language].get(key, f"[{key}]")
+            var.set(translated_text)
+
+    def switch_language(self):
+        self.current_language = 'ru' if self.current_language == 'en' else 'en'
+        self.set_language(self.current_language)
     
 
 class NavBar(CTkFrame):
@@ -368,19 +406,17 @@ class NavBar(CTkFrame):
 class Menu(CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, width=220, corner_radius=10)
-        self.rows = 0
-        self.grid_columnconfigure(0, weight=1)
 
     def add_widget(self, widget):
-        widget.grid(row=self.rows, column=0, sticky="ew", padx=8, pady=10)
-        self.rows += 1
+        widget.pack(side=TOP, anchor=NW, padx=10, pady=10)
 
 
 class ResFrame(CTkScrollableFrame):
-    def __init__(self, parent, vector1, vector2):
+    def __init__(self, parent, vector1, vector2, controller):
         super().__init__(parent, orientation="horizontal", width=500)
         self.vector1 = vector1
         self.vector2 = vector2
+        self.controller = controller
         self.create_res()
 
     def create_res(self):
@@ -393,11 +429,11 @@ class ResFrame(CTkScrollableFrame):
                                      )
         
         self.lbl1 = create_label(self,
-                                 text='Результат 1:',
+                                 textvar=self.controller.text_vars['result_1'],
                                  )
         
         self.lbl2 = create_label(self,
-                                 text='Результат 2:',
+                                 textvar=self.controller.text_vars['result_2'],
                                  )
         
         self.lbl1.grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -438,7 +474,7 @@ class MatrixTable(CTkFrame):
     def create_matrix(self):
         self.reset_matrix()
         self.mat_entries = np.empty((self.rows, self.cols), dtype=object)
-        start = time.time()
+        # start = time.time()
         for i in range(self.rows):
             for j in range(self.cols):
                 entry = create_entry(self.scrollable_frame,
@@ -452,7 +488,7 @@ class MatrixTable(CTkFrame):
                 lbl_c.grid(row=0, column=j + 1, sticky="n")
                 entry.grid(row=i + 1, column=j + 1, padx=2, pady=2, sticky="w")
                 self.mat_entries[i, j] = entry
-        end = time.time()
+        # end = time.time()
         # print(f"{self.rows}x{self.cols}",end-start)
 
     def update_matrix_size(self, new_rows, new_cols):

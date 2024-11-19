@@ -1,10 +1,9 @@
-from PIL import ImageFont
-
+import customtkinter 
 
 WIDTH = 800
 HEIGHT = 600
-# font = ImageFont.truetype("../assets/RobotoMono-VariableFont_wght.ttf", 18)
-# custom_font = font.Font(file="../assets/RobotoMono-VariableFont_wght.ttf", size=18)
+customtkinter.FontManager.load_font("../assets/fonts/RobotoMono-VariableFont_wght.ttf")
+# new_font = ("Russo One", 18)
 my_font = ("Roboto Mono", 18)
 TT_TEXT_COLOR = "#ffffff"
 TT_BG_COLOR = "#696969"

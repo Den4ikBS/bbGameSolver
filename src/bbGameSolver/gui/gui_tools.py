@@ -1,4 +1,3 @@
-import pandas as pd
 from customtkinter import *
 
 from ..config import my_font
@@ -19,15 +18,16 @@ def create_entry(master, width=24, height=24, fg_color="transparent"):
         entry.insert(0, 0)  
         return entry
 
-def create_label(master, text='', image=None):
+def create_label(master, text='', image=None, textvar=None):
     label = CTkLabel(master=master,
                      text=text,
                      image=image,
                      font=my_font,
+                     textvariable=textvar,
                      )
     return label
 
-def create_button(master, text='', cmd=None, width=200, height=34, corner_radius=20, bg_color="transparent", image=None):
+def create_button(master, text='', cmd=None, width=200, height=34, corner_radius=20, bg_color="transparent", image=None, textvar=None):
     button = CTkButton(master=master,
                        text=text,
                        command=cmd,
@@ -43,8 +43,16 @@ def create_button(master, text='', cmd=None, width=200, height=34, corner_radius
                        text_color_disabled=None,
                        background_corner_colors=None,
                        image=image,  
-                       font=my_font,                      
+                       font=my_font,  
+                       textvariable=textvar,                    
                        )
+    if textvar is not None:
+        def update_button_text(*args):
+            button.configure(text=textvar.get())
+    
+        textvar.trace_add("write", update_button_text)    
+        button.configure(text=textvar.get())
+
     return button
 
 def create_optionmenu(master, vals, cmd=None):
@@ -62,6 +70,3 @@ def create_optionmenu(master, vals, cmd=None):
 
 def optionmenu_map_callback(choice):    
     return choice
-
-def to_tsv(mtx, csv_path):
-    return pd.DataFrame(mtx).to_csv(csv_path, index=False, header=False, sep='\t')
