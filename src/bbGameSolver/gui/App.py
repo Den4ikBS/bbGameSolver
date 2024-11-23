@@ -9,6 +9,7 @@ from customtkinter import *
 from tktooltip import ToolTip
 
 from ..config import *
+from .gui_widgets import *
 from .gui_tools import *
 from ..utils import *
 from ..calc import DGame
@@ -26,12 +27,9 @@ class StartPage(CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.create_start_page()
-
-    def create_start_page(self):
         self.create_background()
         self.create_widgets()
-        self.place_widgets()
+        self.place_widgets()        
 
     def create_widgets(self):
         self.lbl_hello = create_label(self.main_frame,
@@ -68,20 +66,13 @@ class MatrixPage(CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.create_matrix_page()
-
-    def create_matrix_page(self):
         self.create_widgets()
-        
-        self.entry_x.bind("<KeyRelease>", self.update_matrix_frame)
-        self.entry_y.bind("<KeyRelease>", self.update_matrix_frame)
-
         self.place_widgets()
     
     def create_widgets(self):
         self.lbl_frame = CTkFrame(self, corner_radius=10)
         self.iter_frame = CTkFrame(self, corner_radius=10)
-        self.menu = self.add_menu()
+        self.menu = Menu(self)
         self.navbar = self.add_navbar()
         self.entry_x = create_entry(self.lbl_frame, width=40)
         self.entry_y = create_entry(self.lbl_frame, width=40)
@@ -89,7 +80,9 @@ class MatrixPage(CTkFrame):
         self.entry_x.insert(0, "2")
         self.entry_y.delete(0, END)
         self.entry_y.insert(0, "2")
-        self.matrix_frame = self.add_matrix(int(self.entry_x.get()), int(self.entry_y.get()))
+        self.entry_x.bind("<KeyRelease>", self.update_matrix_frame)
+        self.entry_y.bind("<KeyRelease>", self.update_matrix_frame)
+        self.matrix_frame = MatrixTable(self, int(self.entry_x.get()), int(self.entry_y.get()))
 
         self.lbl_shape = create_label(self.lbl_frame, 
                                       textvar=self.controller.text_vars['matrix_shape']
@@ -137,22 +130,14 @@ class MatrixPage(CTkFrame):
                                       cmd=self.controller.switch_language,
                                       )
 
-        tooltips = {self.btn_save: lambda: self.controller.text_vars['tooltip_save'].get(), #"сохранить матрицу в файл", 
-                    self.btn_upload: lambda: self.controller.text_vars['tooltip_upload'].get(), #"загрузить матрицу из файла",
-                    self.btn_reset: lambda: self.controller.text_vars['tooltip_reset'].get(), #"сбросить матрицу", 
-                    self.btn_solve: lambda: self.controller.text_vars['tooltip_solve'].get(), #"решить матричную игру",
+        tooltips = {self.btn_save: lambda: self.controller.text_vars['tooltip_save'].get(),
+                    self.btn_upload: lambda: self.controller.text_vars['tooltip_upload'].get(),
+                    self.btn_reset: lambda: self.controller.text_vars['tooltip_reset'].get(),
+                    self.btn_solve: lambda: self.controller.text_vars['tooltip_solve'].get(),
                     }
         
         for widget, msg_func in tooltips.items():
             self.create_tooltip(widget, msg_func)
-
-    def get_iter(self, choice):
-        self.n_iter = int(self.cb_iter.get())
-        
-    def create_tooltip(self, widget, msg=""):
-        ToolTip(widget, msg=msg, delay=0.01, follow=True,
-        parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
-        fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
     def place_widgets(self):
         for widget in [self.btn_lang, self.btn_save, self.btn_upload, self.btn_reset, self.btn_solve]:
@@ -172,9 +157,6 @@ class MatrixPage(CTkFrame):
         self.iter_frame.pack(side=TOP, anchor=NW, padx=10, pady=(5, 5), fill=X)
         self.matrix_frame.pack(side=TOP, anchor=NW, padx=10, pady=(5, 10), fill=BOTH, expand=1)      
 
-    def add_matrix(self, rows, cols):
-        self.matrix_frame = MatrixTable(self, rows, cols)
-        return self.matrix_frame
     
     def add_navbar(self):
         self.navbar = NavBar(self, 
@@ -182,10 +164,6 @@ class MatrixPage(CTkFrame):
                              cmd_next=lambda: self.controller.show_frame("ResultPage"),
                              )
         return self.navbar
-    
-    def add_menu(self):
-        self.menu = Menu(self)
-        return self.menu
 
     def update_matrix_frame(self, event=None):
         try:
@@ -215,7 +193,6 @@ class MatrixPage(CTkFrame):
                 
         to_tsv(mat, file_path)
 
-    
     def solve(self):
         self.n_iter = int(self.cb_iter.get())
         self.mat = self.matrix_frame.get_matrix_data()
@@ -226,22 +203,27 @@ class MatrixPage(CTkFrame):
         self.controller.frames["ResultPage"].table_frame.fill_table(g.log)
         self.controller.show_frame("ResultPage")
 
+    def get_iter(self, choice):
+        self.n_iter = int(self.cb_iter.get())
+        
+    def create_tooltip(self, widget, msg=""):
+        ToolTip(widget, msg=msg, delay=0.01, follow=True,
+        parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
+        fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
+
 
 class ResultPage(CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
         self.parent = parent
-        self.create_result_page()
-
-    def create_result_page(self):
         self.create_widgets()
         self.place_widgets()
 
     def create_widgets(self):
         self.table_frame = TableFrame(self, self.controller)
-        self.menu = self.add_menu() 
-        self.res_frame = self.add_res()
+        self.menu = Menu(self)
+        self.res_frame = ResFrame(self, None, None, self.controller)
         self.navbar = self.add_navbar() 
 
         self.btn_reset = create_button(self.menu,
@@ -287,14 +269,6 @@ class ResultPage(CTkFrame):
                              tooltips=(None, lambda: self.controller.text_vars['reset'].get())
                              )
         return self.navbar
-    
-    def add_menu(self):
-        self.menu = Menu(self) 
-        return self.menu
-    
-    def add_res(self):
-        self.res_frame = ResFrame(self, None, None, self.controller)
-        return self.res_frame
 
 
 class App(CTk):
@@ -384,234 +358,6 @@ class App(CTk):
     def switch_language(self):
         self.current_language = 'ru' if self.current_language == 'en' else 'en'
         self.set_language(self.current_language)
-    
-
-class NavBar(CTkFrame):
-    def __init__(self, parent, cmd_prev, cmd_next, text_next='>', img=None, tooltips=(None, None)):
-        super().__init__(parent, width=WIDTH, corner_radius=20)
-        self.cmd_prev = cmd_prev
-        self.cmd_next = cmd_next
-        self.text_next = text_next
-        self.img = img
-        self.tooltips = tooltips
-        self.create_navbar()
-
-    def create_navbar(self):
-        btn_next = create_button(self,
-                                 text=self.text_next,
-                                 cmd=self.cmd_next,
-                                 width=36,
-                                 height=36,
-                                 bg_color="#000001",
-                                 image=self.img,
-                                 )
-        
-        btn_prev = create_button(self,
-                                 text='<',
-                                 cmd=self.cmd_prev,
-                                 width=36,
-                                 height=36,
-                                 bg_color="#000001",
-                                 )
-        
-        pywinstyles.set_opacity(btn_prev, color="#000001")
-        pywinstyles.set_opacity(btn_next, color="#000001")
-
-        if self.tooltips[0]:
-            self.create_tooltip(btn_prev, self.tooltips[0])
-        if self.tooltips[1]:
-            self.create_tooltip(btn_next, self.tooltips[1])
-        
-        btn_prev.pack(side="left")
-        btn_next.pack(side="right")
-
-    def create_tooltip(self, widget, msg=""):
-        ToolTip(widget, msg=msg, delay=0.01, follow=True,
-        parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
-        fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
-
-
-class Menu(CTkFrame):
-    def __init__(self, parent):
-        super().__init__(parent, width=220, corner_radius=10)
-
-    def add_widget(self, widget):
-        widget.pack(side=TOP, anchor=NW, padx=10, pady=10)
-
-
-class ResFrame(CTkScrollableFrame):
-    def __init__(self, parent, vector1, vector2, controller):
-        super().__init__(parent, orientation="horizontal", width=500, height=160)
-        self.vector1 = vector1
-        self.vector2 = vector2
-        self.controller = controller
-        self.create_res()
-
-    def create_res(self):
-        self.lbl_vec1 = create_label(self,
-                                     text=self.vector1,
-                                     )
-        
-        self.lbl_vec2 = create_label(self,
-                                     text=self.vector2,
-                                     )
-        
-        self.lbl1 = create_label(self,
-                                 textvar=self.controller.text_vars['result_1'],
-                                 )
-        
-        self.lbl2 = create_label(self,
-                                 textvar=self.controller.text_vars['result_2'],
-                                 )
-        
-        self.lbl1.grid(row=0, column=0, padx=10, pady=(10,5), sticky="w")
-        self.lbl_vec1.grid(row=1, column=0, padx=10, pady=(5,5), sticky="w")
-        self.lbl2.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        self.lbl_vec2.grid(row=3, column=0, padx=10, pady=5, sticky="w")
-
-    def update_res(self, new_s1, new_s2):
-        self.lbl_vec1.configure(text=new_s1)
-        self.lbl_vec2.configure(text=new_s2)
-
-
-class MatrixTable(CTkFrame):
-    def __init__(self, parent, rows, cols):
-        super().__init__(parent, width=500)
-        self.rows = rows
-        self.cols = cols
-        self.entries = []
-        self.create_sb_frame()
-        self.create_matrix()
-
-    def create_sb_frame(self):
-        self.canvas = CTkCanvas(self, bg="gray17", highlightthickness=0)
-        self.canvas.grid(row=0, column=0, sticky="nsew")
-
-        self.v_scrollbar = CTkScrollbar(self, orientation="vertical", command=self.canvas.yview)
-        self.v_scrollbar.grid(row=0, column=1, sticky="ns")
-        self.h_scrollbar = CTkScrollbar(self, orientation="horizontal", command=self.canvas.xview)
-        self.h_scrollbar.grid(row=1, column=0, sticky="ew")
-
-        self.canvas.configure(yscrollcommand=self.v_scrollbar.set, xscrollcommand=self.h_scrollbar.set)
-        self.scrollable_frame = CTkFrame(self.canvas, fg_color="transparent")
-        self.scrollable_frame.bind("<Configure>", self.on_frame_configure)
-        self.canvas_frame = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-    def create_matrix(self):
-        self.reset_matrix()
-        self.mat_entries = np.empty((self.rows, self.cols), dtype=object)
-        # start = time.time()
-        for i in range(self.rows):
-            for j in range(self.cols):
-                entry = create_entry(self.scrollable_frame,
-                                     width=54,
-                                     height=30,
-                                     )
-                # entry = tk.Entry(self.scrollable_frame)
-                lbl_r = create_label(self.scrollable_frame, text=f"{i}")
-                lbl_c = create_label(self.scrollable_frame, text=f"{j}")
-                lbl_r.grid(row=i + 1, column=0, sticky="w", padx=10)
-                lbl_c.grid(row=0, column=j + 1, sticky="n")
-                entry.grid(row=i + 1, column=j + 1, padx=2, pady=2, sticky="w")
-                self.mat_entries[i, j] = entry
-        # end = time.time()
-        # print(f"{self.rows}x{self.cols}",end-start)
-
-    def update_matrix_size(self, new_rows, new_cols):
-        self.rows = new_rows
-        self.cols = new_cols
-        self.create_matrix()
-
-    def reset_matrix(self):
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
-
-    def get_matrix_data(self):
-        data = np.empty((self.rows, self.cols))
-        for i in range(self.rows):
-            for j in range(self.cols):
-                data[i, j] = float(self.mat_entries[i, j].get())
-
-        return data
-    
-    def set_matrix_data(self, mat):
-        self.update_matrix_size(mat.shape[0], mat.shape[1])
-        for i in range(self.rows):
-            for j in range(self.cols):
-                self.mat_entries[i, j].delete(0, END)
-                self.mat_entries[i, j].insert(0, mat[i, j])
-
-    def on_frame_configure(self, event=None):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-
-
-class ToplevelWindow(CTkToplevel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.geometry("300x200")
-
-
-class TableFrame(CTkScrollableFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, width=500)
-        self.controller = controller
-        self.create_table()
-    
-    def create_table(self):
-        columns = ("#1", "#2", "#3", "#4")
-        self.tree = ttk.Treeview(self, show="headings", columns=columns)
-        self.tree.heading("#1", text="Выигрыши \nигрока 1:1")
-        self.tree.heading("#2", text="Выигрыши \nигрока 1:2")
-        self.tree.heading("#3", text="Выигрыши \nигрока 2:1")
-        self.tree.heading("#4", text="Выигрыши \nигрока 2:2")
-        self.tree.heading('#0', text='\n\n')
-        # ysb = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
-        # self.tree.configure(yscrollcommand=ysb.set)
-
-        self.tree.column("#1", anchor="center", width=60)
-        self.tree.column("#2", anchor="center", width=60)
-        self.tree.column("#3", anchor="center", width=60)
-        self.tree.column("#4", anchor="center", width=60)
-
-        style = ttk.Style()
-    
-        style.theme_use("default")
-
-        style.configure("Treeview",
-                        background="#2a2d2e",
-                        foreground="white",
-                        rowheight=30,
-                        fieldbackground="#343638",
-                        bordercolor="#343638",
-                        borderwidth=0,
-                        font=(my_font[0], 16),
-                        )
-        
-        style.map('Treeview', background=[('selected', '#186c44')])
-
-        style.configure("Treeview.Heading",
-                        background="#333333", #696969
-                        foreground="white",
-                        relief="flat",
-                        font=(my_font[0], 18),
-                        rowheight=30,
-                        )
-        
-        style.map("Treeview.Heading",
-                    background=[('active', '#2fa572')])      
-
-        self.tree.pack(side=TOP, anchor=N, padx=10, pady=10, fill=BOTH, expand=1)
-        # ysb.pack(side=RIGHT, fill=Y)
-
-    def fill_table(self, data):
-        for row in data:
-            self.tree.insert("", tk.END, values=tuple(row[-4:]))
-
-    def reset_table(self):
-        self.tree.delete(*self.tree.get_children())
-    
 
 
 if __name__ == "__main__":
