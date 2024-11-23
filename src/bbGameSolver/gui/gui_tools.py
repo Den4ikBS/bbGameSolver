@@ -22,7 +22,7 @@ def create_label(master, text='', image=None, textvar=None):
     label = CTkLabel(master=master,
                      text=text,
                      image=image,
-                     font=my_font,
+                     font=(my_font[0], 16),
                      textvariable=textvar,
                      )
     return label
@@ -70,3 +70,17 @@ def create_optionmenu(master, vals, cmd=None):
 
 def optionmenu_map_callback(choice):    
     return choice
+
+def create_combobox(master, vals, cmd=None):
+    combobox_var = StringVar(value=vals[0])
+    combobox = CTkComboBox(master=master,
+                               width=80,
+                               height=24,
+                               values=vals,
+                               command=cmd,
+                               variable=combobox_var,
+                               corner_radius=20,
+                               font=(my_font[0], 13),
+                               )
+    
+    return combobox

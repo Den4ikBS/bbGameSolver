@@ -33,6 +33,8 @@ class DGame:
             strat_a[i] = (self.log[:, 0].astype(int) == i).sum() / n
         for i in range(B_moves):
             strat_b[i] = (self.log[:, 1].astype(int) == i).sum() / n
+
+        # print(self.log)
         return strat_a, strat_b
     
     @classmethod

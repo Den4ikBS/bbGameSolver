@@ -1,6 +1,8 @@
 import PIL.Image
 import numpy as np
 import time
+import tkinter as tk
+import tkinter.ttk as ttk
 import PIL
 import pywinstyles
 from customtkinter import *
@@ -17,6 +19,7 @@ set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-bl
 
 '''
 esc doesn't work
+scrollbar for logs table doesn't work
 '''
 
 class StartPage(CTkFrame):
@@ -77,6 +80,7 @@ class MatrixPage(CTkFrame):
     
     def create_widgets(self):
         self.lbl_frame = CTkFrame(self, corner_radius=10)
+        self.iter_frame = CTkFrame(self, corner_radius=10)
         self.menu = self.add_menu()
         self.navbar = self.add_navbar()
         self.entry_x = create_entry(self.lbl_frame, width=40)
@@ -94,6 +98,15 @@ class MatrixPage(CTkFrame):
         self.lbl = create_label(self.lbl_frame,
                                 text='x',
                                 )
+        
+        self.lbl_iter = create_label(self.iter_frame,
+                                     textvar=self.controller.text_vars['num_iter']
+                                     )
+        
+        self.cb_iter = create_combobox(self.iter_frame,
+                                       vals=["20", "100", "1000"],
+                                       cmd=self.get_iter
+                                       )
         
         
         self.btn_save = create_button(self.menu,
@@ -132,6 +145,9 @@ class MatrixPage(CTkFrame):
         
         for widget, msg_func in tooltips.items():
             self.create_tooltip(widget, msg_func)
+
+    def get_iter(self, choice):
+        self.n_iter = int(self.cb_iter.get())
         
     def create_tooltip(self, widget, msg=""):
         ToolTip(widget, msg=msg, delay=0.01, follow=True,
@@ -142,16 +158,19 @@ class MatrixPage(CTkFrame):
         for widget in [self.btn_lang, self.btn_save, self.btn_upload, self.btn_reset, self.btn_solve]:
             self.menu.add_widget(widget)
 
-        self.navbar.pack(side=BOTTOM, padx=10, pady=10, fill=X)
+        self.navbar.pack(side=BOTTOM, padx=10, pady=(5,10), fill=X)
         self.menu.pack(side=LEFT, anchor=NW, padx=10, pady=10, fill=Y)
 
-        self.lbl_shape.pack(side=LEFT, anchor=NW, padx=10, pady=10)
-        self.entry_x.pack(side=LEFT, anchor=NW, padx=10, pady=10)
-        self.lbl.pack(side=LEFT, anchor=NW, padx=10, pady=10)
-        self.entry_y.pack(side=LEFT, anchor=NW, padx=10, pady=10)
+        self.lbl_shape.pack(side=LEFT, anchor=CENTER, padx=10, pady=10)
+        self.entry_x.pack(side=LEFT, anchor=CENTER, padx=(10, 5), pady=10)
+        self.lbl.pack(side=LEFT, anchor=CENTER, padx=0, pady=10)
+        self.entry_y.pack(side=LEFT, anchor=CENTER, padx=(5, 10), pady=10)
+        self.lbl_iter.pack(side=LEFT, anchor=CENTER, padx=(10, 10), pady=10)
+        self.cb_iter.pack(side=LEFT, anchor=CENTER, padx=0, pady=10)
 
-        self.lbl_frame.pack(side=TOP, anchor=NW, padx=10, pady=10, fill=X)
-        self.matrix_frame.pack(side=TOP, anchor=NW, padx=10, pady=10, fill=BOTH, expand=1)      
+        self.lbl_frame.pack(side=TOP, anchor=NW, padx=10, pady=(10, 5), fill=X)
+        self.iter_frame.pack(side=TOP, anchor=NW, padx=10, pady=(5, 5), fill=X)
+        self.matrix_frame.pack(side=TOP, anchor=NW, padx=10, pady=(5, 10), fill=BOTH, expand=1)      
 
     def add_matrix(self, rows, cols):
         self.matrix_frame = MatrixTable(self, rows, cols)
@@ -198,12 +217,13 @@ class MatrixPage(CTkFrame):
 
     
     def solve(self):
+        self.n_iter = int(self.cb_iter.get())
         self.mat = self.matrix_frame.get_matrix_data()
         g = DGame(self.mat)
-        self.s1, self.s2 = g.solve(n=1000)
-        self.s1 = self.s1.round(2)
-        self.s2 = self.s2.round(2)
-        self.controller.frames["ResultPage"].res_frame.update_res(self.s1, self.s2)
+        self.s1, self.s2 = g.solve(self.n_iter)
+        self.controller.frames["ResultPage"].res_frame.update_res(self.s1.round(2), self.s2.round(2))
+        self.controller.frames["ResultPage"].table_frame.reset_table()
+        self.controller.frames["ResultPage"].table_frame.fill_table(g.log)
         self.controller.show_frame("ResultPage")
 
 
@@ -219,6 +239,7 @@ class ResultPage(CTkFrame):
         self.place_widgets()
 
     def create_widgets(self):
+        self.table_frame = TableFrame(self, self.controller)
         self.menu = self.add_menu() 
         self.res_frame = self.add_res()
         self.navbar = self.add_navbar() 
@@ -250,9 +271,10 @@ class ResultPage(CTkFrame):
         for widget in [self.btn_lang, self.btn_reset]:
             self.menu.add_widget(widget)
 
-        self.navbar.pack(side=BOTTOM, padx=10, pady=10, fill=X)
+        self.navbar.pack(side=BOTTOM, padx=10, pady=(5, 10), fill=X)
         self.menu.pack(side=LEFT, anchor=NW, padx=10, pady=10, fill=Y)
-        self.res_frame.pack(side=RIGHT, anchor=NE, padx=10, pady=10, fill=BOTH, expand=1)
+        self.res_frame.pack(side=TOP, anchor=NE, padx=10, pady=(10,5), fill=X)
+        self.table_frame.pack(side=RIGHT, anchor=NE, padx=10, pady=(5,10), fill=BOTH, expand=1)
         
 
     def add_navbar(self):
@@ -302,6 +324,11 @@ class App(CTk):
             'tooltip_upload': StringVar(),
             'tooltip_reset': StringVar(),
             'tooltip_solve': StringVar(),
+            'table_heading1': StringVar(),
+            'table_heading2': StringVar(),
+            'table_heading3': StringVar(),
+            'table_heading4': StringVar(),
+            'num_iter': StringVar(),
             }
         self.set_language(self.current_language)
         self.create_pages()
@@ -331,6 +358,7 @@ class App(CTk):
         res_page = self.frames["ResultPage"]
         res_page.res_frame.lbl_vec1.configure(text="")
         res_page.res_frame.lbl_vec2.configure(text="")
+        res_page.table_frame.reset_table()
     
     def open_popup(self, event=None):
         if self.popup_window is None or not self.popup_window.winfo_exists(): 
@@ -413,7 +441,7 @@ class Menu(CTkFrame):
 
 class ResFrame(CTkScrollableFrame):
     def __init__(self, parent, vector1, vector2, controller):
-        super().__init__(parent, orientation="horizontal", width=500)
+        super().__init__(parent, orientation="horizontal", width=500, height=160)
         self.vector1 = vector1
         self.vector2 = vector2
         self.controller = controller
@@ -436,10 +464,10 @@ class ResFrame(CTkScrollableFrame):
                                  textvar=self.controller.text_vars['result_2'],
                                  )
         
-        self.lbl1.grid(row=0, column=0, padx=10, pady=10, sticky="w")
-        self.lbl_vec1.grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        self.lbl2.grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        self.lbl_vec2.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+        self.lbl1.grid(row=0, column=0, padx=10, pady=(10,5), sticky="w")
+        self.lbl_vec1.grid(row=1, column=0, padx=10, pady=(5,5), sticky="w")
+        self.lbl2.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        self.lbl_vec2.grid(row=3, column=0, padx=10, pady=5, sticky="w")
 
     def update_res(self, new_s1, new_s2):
         self.lbl_vec1.configure(text=new_s1)
@@ -523,6 +551,67 @@ class ToplevelWindow(CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry("300x200")
+
+
+class TableFrame(CTkScrollableFrame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, width=500)
+        self.controller = controller
+        self.create_table()
+    
+    def create_table(self):
+        columns = ("#1", "#2", "#3", "#4")
+        self.tree = ttk.Treeview(self, show="headings", columns=columns)
+        self.tree.heading("#1", text="Выигрыши \nигрока 1:1")
+        self.tree.heading("#2", text="Выигрыши \nигрока 1:2")
+        self.tree.heading("#3", text="Выигрыши \nигрока 2:1")
+        self.tree.heading("#4", text="Выигрыши \nигрока 2:2")
+        self.tree.heading('#0', text='\n\n')
+        # ysb = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
+        # self.tree.configure(yscrollcommand=ysb.set)
+
+        self.tree.column("#1", anchor="center", width=60)
+        self.tree.column("#2", anchor="center", width=60)
+        self.tree.column("#3", anchor="center", width=60)
+        self.tree.column("#4", anchor="center", width=60)
+
+        style = ttk.Style()
+    
+        style.theme_use("default")
+
+        style.configure("Treeview",
+                        background="#2a2d2e",
+                        foreground="white",
+                        rowheight=30,
+                        fieldbackground="#343638",
+                        bordercolor="#343638",
+                        borderwidth=0,
+                        font=(my_font[0], 16),
+                        )
+        
+        style.map('Treeview', background=[('selected', '#186c44')])
+
+        style.configure("Treeview.Heading",
+                        background="#333333", #696969
+                        foreground="white",
+                        relief="flat",
+                        font=(my_font[0], 18),
+                        rowheight=30,
+                        )
+        
+        style.map("Treeview.Heading",
+                    background=[('active', '#2fa572')])      
+
+        self.tree.pack(side=TOP, anchor=N, padx=10, pady=10, fill=BOTH, expand=1)
+        # ysb.pack(side=RIGHT, fill=Y)
+
+    def fill_table(self, data):
+        for row in data:
+            self.tree.insert("", tk.END, values=tuple(row[-4:]))
+
+    def reset_table(self):
+        self.tree.delete(*self.tree.get_children())
+    
 
 
 if __name__ == "__main__":
