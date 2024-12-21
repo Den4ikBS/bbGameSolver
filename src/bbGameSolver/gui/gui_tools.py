@@ -180,25 +180,25 @@ class ToplevelWindow(CTkToplevel):
 
 class TableFrame(CTkScrollableFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent, width=500)
+        super().__init__(parent, width=500, orientation="horizontal")
         self.controller = controller
         self.create_table()
     
     def create_table(self):
-        columns = ("#1", "#2", "#3", "#4")
+        self.rows = int(self.controller.frames["MatrixPage"].entry_x.get())
+        self.cols = int(self.controller.frames["MatrixPage"].entry_y.get())
+        columns = tuple((f"#{i}" for i in range(1, self.rows + self.cols + 1)))
         self.tree = ttk.Treeview(self, show="headings", columns=columns)
-        self.tree.heading("#1", text="Выигрыши \nигрока 1:1")
-        self.tree.heading("#2", text="Выигрыши \nигрока 1:2")
-        self.tree.heading("#3", text="Выигрыши \nигрока 2:1")
-        self.tree.heading("#4", text="Выигрыши \nигрока 2:2")
-        self.tree.heading('#0', text='\n\n')
-        # ysb = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
-        # self.tree.configure(yscrollcommand=ysb.set)
+        for i in range(1, self.rows + 1):
+            self.tree.heading(f"#{i}", text=f"Выигрыши \nигрока 1:{i}")
 
-        self.tree.column("#1", anchor="center", width=60)
-        self.tree.column("#2", anchor="center", width=60)
-        self.tree.column("#3", anchor="center", width=60)
-        self.tree.column("#4", anchor="center", width=60)
+        for i in range(self.rows + 1, self.rows + self.cols + 1):
+            self.tree.heading(f"#{i}", text=f"Выигрыши \nигрока 2:{i - self.rows}")
+
+        self.tree.heading('#0', text='\n\n')
+
+        for c in columns:
+            self.tree.column(c, anchor="center")
 
         style = ttk.Style()
     
@@ -231,8 +231,10 @@ class TableFrame(CTkScrollableFrame):
         # ysb.pack(side=RIGHT, fill=Y)
 
     def fill_table(self, data):
+        print(data)
         for row in data:
-            self.tree.insert("", tk.END, values=tuple(row[-4:]))
+            self.tree.insert("", tk.END, values=tuple(row[-(self.rows + self.cols):]))
 
     def reset_table(self):
-        self.tree.delete(*self.tree.get_children())
+        self.tree.destroy()
+        self.create_table()
