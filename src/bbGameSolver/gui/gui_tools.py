@@ -1,7 +1,7 @@
 import numpy as np
 import tkinter as tk
 import tkinter.ttk as ttk
-import pywinstyles
+# import pywinstyles
 from customtkinter import *
 from tktooltip import ToolTip
 
@@ -41,8 +41,8 @@ class NavBar(CTkFrame):
                                  bg_color="#000001",
                                  )
         
-        pywinstyles.set_opacity(btn_prev, color="#000001")
-        pywinstyles.set_opacity(btn_next, color="#000001")
+        # pywinstyles.set_opacity(btn_prev, color="#000001")
+        # pywinstyles.set_opacity(btn_next, color="#000001")
 
         if self.tooltips[0]:
             self.create_tooltip(btn_prev, self.tooltips[0])
@@ -251,7 +251,6 @@ class TableFrame(CTkScrollableFrame):
 
     def fill_table(self, data):
         """Запись данных в таблицу"""
-        print(data)
         for row in data:
             self.tree.insert("", tk.END, values=tuple(row[-(self.rows + self.cols):]))
 

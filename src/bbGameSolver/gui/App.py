@@ -5,7 +5,7 @@ import time
 import tkinter as tk
 import tkinter.ttk as ttk
 import PIL
-import pywinstyles
+# import pywinstyles
 from customtkinter import *
 from tktooltip import ToolTip
 
@@ -199,7 +199,6 @@ class MatrixPage(CTkFrame):
     def button_save_callback(self):
         """Обработчик кнопки сохранения матрицы в текстовый файл в виде таблицы"""
         mat = self.matrix_frame.get_matrix_data() 
-        print(mat)
         file_path = filedialog.asksaveasfile(initialdir='../data',
                                              initialfile = 'Untitled.tsv',
                                              defaultextension=".tsv",
