@@ -12,6 +12,7 @@ from ..utils import *
 
 
 class NavBar(CTkFrame):
+    """Класс виджета навигационной панели"""
     def __init__(self, parent, cmd_prev, cmd_next, text_next='>', img=None, tooltips=(None, None)):
         super().__init__(parent, width=WIDTH, corner_radius=20)
         self.cmd_prev = cmd_prev
@@ -22,6 +23,7 @@ class NavBar(CTkFrame):
         self.create_navbar()
 
     def create_navbar(self):
+        """Создание виджетов навигационной панели """
         btn_next = create_button(self,
                                  text=self.text_next,
                                  cmd=self.cmd_next,
@@ -51,20 +53,24 @@ class NavBar(CTkFrame):
         btn_next.pack(side="right")
 
     def create_tooltip(self, widget, msg=""):
+        """Создание подсказок при наведении курсора"""
         ToolTip(widget, msg=msg, delay=0.01, follow=True,
         parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
         fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
 
 class Menu(CTkFrame):
+    """Класс фрейма меню"""
     def __init__(self, parent):
         super().__init__(parent, width=220, corner_radius=10)
 
     def add_widget(self, widget):
+        """Добавление виджетов в меню"""
         widget.pack(side=TOP, anchor=NW, padx=10, pady=10)
 
 
 class ResFrame(CTkScrollableFrame):
+    """Класс создания окна вывода результатов расчетов"""
     def __init__(self, parent, vector1, vector2, controller):
         super().__init__(parent, orientation="horizontal", height=160)
         self.vector1 = vector1
@@ -73,6 +79,7 @@ class ResFrame(CTkScrollableFrame):
         self.create_res()
 
     def create_res(self):
+        """Создание виджетов для вывода результата"""
         self.lbl_vec1 = create_label(self,
                                      text=self.vector1,
                                      )
@@ -95,11 +102,13 @@ class ResFrame(CTkScrollableFrame):
         self.lbl_vec2.grid(row=3, column=0, padx=10, pady=5, sticky="w")
 
     def update_res(self, new_s1, new_s2):
+        """Обновление значений полей вывода результата"""
         self.lbl_vec1.configure(text=new_s1)
         self.lbl_vec2.configure(text=new_s2)
 
 
 class MatrixTable(CTkFrame):
+    """Класс создания окна ввода и редактирования матрицы"""
     def __init__(self, parent, rows, cols):
         super().__init__(parent, width=500)
         self.rows = rows
@@ -109,6 +118,7 @@ class MatrixTable(CTkFrame):
         self.create_matrix()
 
     def create_sb_frame(self):
+        """Создание фрейма для расположения матрицы"""
         self.canvas = CTkCanvas(self, bg="gray17", highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
@@ -125,6 +135,7 @@ class MatrixTable(CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
     def create_matrix(self):
+        """Создание виджета матрицы"""
         self.reset_matrix()
         self.mat_entries = np.empty((self.rows, self.cols), dtype=object)
         # start = time.time()
@@ -145,15 +156,18 @@ class MatrixTable(CTkFrame):
         # print(f"{self.rows}x{self.cols}",end-start)
 
     def update_matrix_size(self, new_rows, new_cols):
+        """Обновление размера матрицы"""
         self.rows = new_rows
         self.cols = new_cols
         self.create_matrix()
 
     def reset_matrix(self):
+        """Сброс матрицы"""
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
     def get_matrix_data(self):
+        """Получение введенных в матрицу данных"""
         data = np.empty((self.rows, self.cols))
         for i in range(self.rows):
             for j in range(self.cols):
@@ -162,6 +176,7 @@ class MatrixTable(CTkFrame):
         return data
     
     def set_matrix_data(self, mat):
+        """Запись данных в ячейки матрицы"""
         self.update_matrix_size(mat.shape[0], mat.shape[1])
         for i in range(self.rows):
             for j in range(self.cols):
@@ -169,22 +184,26 @@ class MatrixTable(CTkFrame):
                 self.mat_entries[i, j].insert(0, mat[i, j])
 
     def on_frame_configure(self, event=None):
+        """Вспомогательная фнукция"""
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
 
 class ToplevelWindow(CTkToplevel):
+    """Класс создания всплывающего окна"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry("300x200")
 
 
 class TableFrame(CTkScrollableFrame):
+    """Класс создания таблицы вывода итераций"""
     def __init__(self, parent, controller):
         super().__init__(parent, width=500, orientation="horizontal")
         self.controller = controller
         self.create_table()
     
     def create_table(self):
+        """Созданиие и конфигурация таблицы"""
         self.rows = int(self.controller.frames["MatrixPage"].entry_x.get())
         self.cols = int(self.controller.frames["MatrixPage"].entry_y.get())
         columns = tuple((f"#{i}" for i in range(1, self.rows + self.cols + 1)))
@@ -231,10 +250,12 @@ class TableFrame(CTkScrollableFrame):
         # ysb.pack(side=RIGHT, fill=Y)
 
     def fill_table(self, data):
+        """Запись данных в таблицу"""
         print(data)
         for row in data:
             self.tree.insert("", tk.END, values=tuple(row[-(self.rows + self.cols):]))
 
     def reset_table(self):
+        """Сброс данных в таблице"""
         self.tree.destroy()
         self.create_table()
