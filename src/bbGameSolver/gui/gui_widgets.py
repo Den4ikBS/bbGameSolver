@@ -4,10 +4,12 @@ from ..config import my_font
 
 
 def clear_page(master):
+    """Очистка страницы и удаление дочерних элементов"""
     for i in master.winfo_children():
         i.destroy()  
 
 def create_entry(master, width=24, height=24, fg_color="transparent"):
+    """Создание виджета поля ввода"""
         entry = CTkEntry(master=master,
                          width=width,
                          height=height,
@@ -19,6 +21,7 @@ def create_entry(master, width=24, height=24, fg_color="transparent"):
         return entry
 
 def create_label(master, text='', image=None, textvar=None):
+    """Создание виджета текстового поля"""
     label = CTkLabel(master=master,
                      text=text,
                      image=image,
@@ -28,6 +31,7 @@ def create_label(master, text='', image=None, textvar=None):
     return label
 
 def create_button(master, text='', cmd=None, width=200, height=34, corner_radius=20, bg_color="transparent", image=None, textvar=None):
+    """Создание виджета кнопки"""
     button = CTkButton(master=master,
                        text=text,
                        command=cmd,
@@ -56,6 +60,7 @@ def create_button(master, text='', cmd=None, width=200, height=34, corner_radius
     return button
 
 def create_optionmenu(master, vals, cmd=None):
+    """Создание виджета меню выбора"""
     optionmenu_var = StringVar(value=vals[0])
     optionmenu = CTkOptionMenu(master=master,
                                width=80,
@@ -69,9 +74,11 @@ def create_optionmenu(master, vals, cmd=None):
     return optionmenu
 
 def optionmenu_map_callback(choice):    
+    """Вспомогательная функция для меню выбора"""
     return choice
 
 def create_combobox(master, vals, cmd=None):
+    """Создание виджета выпадаюшего списка"""
     combobox_var = StringVar(value=vals[0])
     combobox = CTkComboBox(master=master,
                                width=80,
