@@ -1,3 +1,4 @@
+"""Основной модуль графического приложения."""
 import PIL.Image
 import numpy as np
 import time
@@ -22,9 +23,11 @@ set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-bl
 esc doesn't work
 scrollbar for logs table doesn't work
 '''
-
+# вкладки
 class StartPage(CTkFrame):
+    """Начальная вкладка приложения"""
     def __init__(self, parent, controller):
+        """Конструктор класса"""
         super().__init__(parent)
         self.controller = controller
         self.create_background()
@@ -32,6 +35,7 @@ class StartPage(CTkFrame):
         self.place_widgets()        
 
     def create_widgets(self):
+        """Создание виджетов"""
         self.lbl_hello = create_label(self.main_frame,
                                       textvar=self.controller.text_vars['welcome_message']
                                       )
@@ -50,11 +54,13 @@ class StartPage(CTkFrame):
                                       )
         
     def place_widgets(self): 
+        """Позиционирование виджетов на холсте"""
         self.lbl_hello.pack(side=TOP, anchor=CENTER, padx=10, pady=(HEIGHT//2-100,5))
         self.btn_start.pack(side=TOP, anchor=CENTER, padx=10, pady=5)
         self.btn_lang.pack(side=TOP, anchor=CENTER, padx=10, pady=5)
 
     def create_background(self):
+        """Генерация фонового изображения"""
         self.bg_image = CTkImage(PIL.Image.open("../assets/images/neon-green-matrix.jpg"), size=(WIDTH, HEIGHT))
         self.bg_image_label = create_label(self, image=self.bg_image, text="")
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -63,13 +69,16 @@ class StartPage(CTkFrame):
 
 
 class MatrixPage(CTkFrame):
+    """Вкладка ввода и редактирования матрицы игры"""
     def __init__(self, parent, controller):
+        """Конструктор класса"""
         super().__init__(parent)
         self.controller = controller
         self.create_widgets()
         self.place_widgets()
     
     def create_widgets(self):
+        """Создание виджетов"""
         self.lbl_frame = CTkFrame(self, corner_radius=10)
         self.iter_frame = CTkFrame(self, corner_radius=10)
         self.menu = Menu(self)
@@ -140,6 +149,7 @@ class MatrixPage(CTkFrame):
             self.create_tooltip(widget, msg_func)
 
     def place_widgets(self):
+        """Позиционирование виджетов на холсте"""
         for widget in [self.btn_lang, self.btn_save, self.btn_upload, self.btn_reset, self.btn_solve]:
             self.menu.add_widget(widget)
 
@@ -159,6 +169,7 @@ class MatrixPage(CTkFrame):
 
     
     def add_navbar(self):
+        """Виджет навигации по приложению"""
         self.navbar = NavBar(self, 
                              cmd_prev=lambda: self.controller.show_frame("StartPage"), 
                              cmd_next=lambda: self.controller.show_frame("ResultPage"),
@@ -166,6 +177,7 @@ class MatrixPage(CTkFrame):
         return self.navbar
 
     def update_matrix_frame(self, event=None):
+        """Изменение размера матрицы"""
         try:
             rows = int(self.entry_x.get())
             cols = int(self.entry_y.get())
@@ -174,6 +186,7 @@ class MatrixPage(CTkFrame):
             pass
         
     def button_upload_callback(self):
+        """Обработчик нажатия кнопки загрузки матрицы игры из текстового файла"""
         file_path = filedialog.askopenfilename(title='Select a file', initialdir="../data/")
         g = DGame.from_tsv(file_path)
         self.mat = g.mtx
@@ -184,6 +197,7 @@ class MatrixPage(CTkFrame):
         self.matrix_frame.set_matrix_data(self.mat)
 
     def button_save_callback(self):
+        """Обработчик кнопки сохранения матрицы в текстовый файл в виде таблицы"""
         mat = self.matrix_frame.get_matrix_data() 
         print(mat)
         file_path = filedialog.asksaveasfile(initialdir='../data',
@@ -194,6 +208,7 @@ class MatrixPage(CTkFrame):
         to_tsv(mat, file_path)
 
     def solve(self):
+        """Обработчик запроса на выполнение расчёта игры"""
         self.n_iter = int(self.cb_iter.get())
         self.mat = self.matrix_frame.get_matrix_data()
         g = DGame(self.mat)
@@ -207,12 +222,14 @@ class MatrixPage(CTkFrame):
         self.n_iter = int(self.cb_iter.get())
         
     def create_tooltip(self, widget, msg=""):
+        """Вспомогательная функция задания подсказок при наведении курсора"""
         ToolTip(widget, msg=msg, delay=0.01, follow=True,
         parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
         fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
 
 class ResultPage(CTkFrame):
+    """Вкладка отображения результатов расчёта игры"""
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -221,6 +238,7 @@ class ResultPage(CTkFrame):
         self.place_widgets()
 
     def create_widgets(self):
+        """Создание и инициализация виджетов вкладки"""
         self.table_frame = TableFrame(self, self.controller)
         self.menu = Menu(self)
         self.res_frame = ResFrame(self, None, None, self.controller)
@@ -245,11 +263,13 @@ class ResultPage(CTkFrame):
             self.create_tooltip(k, v)
         
     def create_tooltip(self, widget, msg=""):
+        """Вспомогательная функция задания подсказок при наведении курсора"""
         ToolTip(widget, msg=msg, delay=0.01, follow=True,
         parent_kwargs={"bg": TT_BORDER_COLOR, "padx": 3, "pady": 3},
         fg=TT_TEXT_COLOR, bg=TT_BG_COLOR, padx=7, pady=7, font=my_font)
 
     def place_widgets(self):
+        """Позиционирование виджетов на холсте"""
         for widget in [self.btn_lang, self.btn_reset]:
             self.menu.add_widget(widget)
 
@@ -260,6 +280,7 @@ class ResultPage(CTkFrame):
         
 
     def add_navbar(self):
+        """Виджет навигации по приложению"""
         img = CTkImage(PIL.Image.open("../assets/images/refresh.png"), size=(14, 14))
         self.navbar = NavBar(self, 
                              cmd_prev=lambda: self.controller.show_frame("MatrixPage"), 
@@ -272,6 +293,7 @@ class ResultPage(CTkFrame):
 
 
 class App(CTk):
+    """Основной класс приложения"""
     def __init__(self):
         super().__init__()
         self.geometry(f'{WIDTH}x{HEIGHT}')
@@ -284,7 +306,7 @@ class App(CTk):
         self.bind("<Escape>", self.close_popup)
         self.translations = load_translations()
         self.current_language = 'ru'
-        self.text_vars = {
+        self.text_vars = {  # строки локализации
             'welcome_message': StringVar(),
             'start': StringVar(),
             'save': StringVar(),
@@ -309,6 +331,7 @@ class App(CTk):
         self.show_frame("StartPage")
     
     def create_pages(self):
+        """Создание вкладок приложения"""
         for F in (StartPage, MatrixPage, ResultPage):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
@@ -318,10 +341,12 @@ class App(CTk):
             self.container.grid_columnconfigure(0, weight=1)
         
     def show_frame(self, page_name):
+        """Вспомогательная функция отображения выбранной вкладки"""
         frame = self.frames[page_name]
         frame.tkraise()
 
     def reset(self):
+        """Сброс состояния приложения в исходное"""
         matrix_page = self.frames["MatrixPage"]
         matrix_page.matrix_frame.reset_matrix()
         matrix_page.matrix_frame.update_matrix_size(2, 2)
@@ -335,6 +360,7 @@ class App(CTk):
         res_page.table_frame.reset_table()
     
     def open_popup(self, event=None):
+        """Отображение информационного всплывающего окна"""
         if self.popup_window is None or not self.popup_window.winfo_exists(): 
             self.popup_window = ToplevelWindow(self)        
             label = CTkLabel(self.popup_window, text="Хелпы")
@@ -346,16 +372,19 @@ class App(CTk):
             self.popup_window.grab_set()
 
     def close_popup(self, event=None):
+        """Закрытие всплывающего окна"""
         if self.popup_window is not None and self.popup_window.winfo_exists():
             self.popup_window.destroy()
             self.popup_window = None
 
     def set_language(self, language):
+        """Выбор локализации"""
         for key, var in self.text_vars.items():
             translated_text = self.translations[language].get(key, f"[{key}]")
             var.set(translated_text)
 
     def switch_language(self):
+        """Переключение языка локализации"""
         self.current_language = 'ru' if self.current_language == 'en' else 'en'
         self.set_language(self.current_language)
 

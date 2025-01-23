@@ -1,2 +1,7 @@
 numpy
 pandas
+Pillow
+pywinstyles
+customtkinter
+tkinter-tooltip
+

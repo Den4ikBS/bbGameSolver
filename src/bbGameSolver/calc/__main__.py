@@ -1,3 +1,4 @@
+"""Демонстрационный генератор матриц из платёжной функции игры "Дуэль"."""
 import sys
 from . import *
 
@@ -13,6 +14,10 @@ from pprint import pprint
 # TODO: figure out a way to handle contiguous games
 
 def duel(n):
+    """Платёжная функция дискретной игры "Дуэль".
+    
+    n: int: количество шагов
+    """
     def f(i, j):
         if i == j:
             return 0.0
