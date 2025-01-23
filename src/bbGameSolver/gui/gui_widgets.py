@@ -10,15 +10,15 @@ def clear_page(master):
 
 def create_entry(master, width=24, height=24, fg_color="transparent"):
     """Создание виджета поля ввода"""
-        entry = CTkEntry(master=master,
-                         width=width,
-                         height=height,
-                         corner_radius=20,
-                         fg_color=fg_color,
-                         font=(my_font[0], 13),
-                         )
-        entry.insert(0, 0)  
-        return entry
+    entry = CTkEntry(master=master,
+                        width=width,
+                        height=height,
+                        corner_radius=20,
+                        fg_color=fg_color,
+                        font=(my_font[0], 13),
+                        )
+    entry.insert(0, 0)  
+    return entry
 
 def create_label(master, text='', image=None, textvar=None):
     """Создание виджета текстового поля"""
